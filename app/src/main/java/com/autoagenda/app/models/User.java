@@ -1,11 +1,9 @@
 package com.autoagenda.app.models;
 
 import java.util.Collection;
-
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,8 +17,8 @@ public class User implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO) 
-    private long id;
-    @Column(name = "usuario")
+    private Long id;
+    @Column(name = "usuario", unique = true)
     private String username;
     @Column(name = "senha")
     private String password;
@@ -30,7 +28,7 @@ public class User implements UserDetails{
     private String name;
     @Column(name = "sobrenome")
     private String lastName;
-
+        
     public long getId() {
         return id;
     }
