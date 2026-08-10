@@ -1,14 +1,18 @@
 package com.autoagenda.app.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -28,7 +32,22 @@ public class User implements UserDetails{
     private String name;
     @Column(name = "sobrenome")
     private String lastName;
+
+    @OneToMany(mappedBy = "user")
+    private List<RolesUsers> userRoles = new ArrayList<>();
         
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<RolesUsers> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(List<RolesUsers> userRoles) {
+        this.userRoles = userRoles;
+    }
+
     public long getId() {
         return id;
     }
@@ -71,8 +90,11 @@ public class User implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAuthorities'");
+        List<SimpleGrantedAuthority> roles = new ArrayList<>();
+        for (RolesUsers role : userRoles) {
+            roles.add(new SimpleGrantedAuthority(role.getAtribuicao().toString()));
+        }
+        return roles;
     }
 
     @Override
