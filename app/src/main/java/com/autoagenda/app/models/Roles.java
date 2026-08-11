@@ -22,7 +22,7 @@ public class Roles {
     private Long id;
    
     @Column(name = "atribuicao")
-    private UserRoles role = UserRoles.USER;
+    private UserRoles role;
    
     @OneToMany(mappedBy="role")
     private List<RolesUsers> roles = new ArrayList<>();

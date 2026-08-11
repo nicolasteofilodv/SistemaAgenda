@@ -1,6 +1,6 @@
 package com.autoagenda.app.utils;
 
 public enum UserRoles {
-    ADMIN,
-    USER
+    ROLE_ADMIN, 
+    ROLE_USER
 }
