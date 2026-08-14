@@ -17,8 +17,11 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     public Long id;
 
-    @Column(name = "horario")
+    @Column(name = "horario_inicio")
     public OffsetDateTime horario;
+
+    @Column(name = "horario_fim")
+    public OffsetDateTime horarioFim;
     
     public Long getId() {
         return id;
@@ -34,5 +37,13 @@ public class Reservation {
 
     public void setHorario(OffsetDateTime horario) {
         this.horario = horario;
+    }
+
+    public OffsetDateTime getHorarioFim() {
+        return horarioFim;
+    }
+
+    public void setHorarioFim(OffsetDateTime horarioFim) {
+        this.horarioFim = horarioFim;
     }
 }

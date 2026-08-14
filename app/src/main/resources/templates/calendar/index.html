@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendário de agendamentos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILvFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <style>
         :root {
@@ -262,9 +262,17 @@
                         <label for="selectedDateLabel" class="form-label">Dia escolhido</label>
                         <input type="text" id="selectedDateLabel" class="form-control" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label for="timeSelect" class="form-label">Horários disponíveis</label>
-                        <select name="time" id="timeSelect" class="form-select" required></select>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="timeStartInput" class="form-label">Horário inicial</label>
+                            <input type="time" name="time" id="timeStartInput" class="form-control" list="startTimeOptions" step="900" required>
+                            <datalist id="startTimeOptions"></datalist>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="timeEndInput" class="form-label">Horário final</label>
+                            <input type="time" name="timeFim" id="timeEndInput" class="form-control" list="endTimeOptions" step="900" required>
+                            <datalist id="endTimeOptions"></datalist>
+                        </div>
                     </div>
                     <div class="calendar-inline-note" id="scheduleHelper"></div>
                 </div>
@@ -288,7 +296,10 @@
         var scheduleModalSubtitle = document.getElementById('scheduleModalSubtitle');
         var selectedDateInput = document.getElementById('selectedDateInput');
         var selectedDateLabel = document.getElementById('selectedDateLabel');
-        var timeSelect = document.getElementById('timeSelect');
+        var timeStartInput = document.getElementById('timeStartInput');
+        var timeEndInput = document.getElementById('timeEndInput');
+        var startTimeOptions = document.getElementById('startTimeOptions');
+        var endTimeOptions = document.getElementById('endTimeOptions');
         var scheduleHelper = document.getElementById('scheduleHelper');
         var submitButton = document.getElementById('scheduleSubmitButton');
         var availabilityEntries = document.querySelectorAll('#availabilityPreview [data-weekday]');
@@ -416,34 +427,35 @@
         }
 
         function fillTimeOptions(opening, closing) {
-            var options = buildTimeSlots(opening, closing);
-            timeSelect.innerHTML = '';
+            var startOptions = buildStartSlots(opening, closing);
+            startTimeOptions.innerHTML = '';
+            endTimeOptions.innerHTML = '';
 
-            if (options.length === 0) {
-                var emptyOption = document.createElement('option');
-                emptyOption.value = '';
-                emptyOption.textContent = 'Sem horários disponíveis';
-                emptyOption.selected = true;
-                timeSelect.appendChild(emptyOption);
-                timeSelect.disabled = true;
+            if (startOptions.length === 0) {
+                timeStartInput.value = '';
+                timeEndInput.value = '';
+                timeStartInput.disabled = true;
+                timeEndInput.disabled = true;
                 submitButton.disabled = true;
                 scheduleHelper.textContent = 'Não existe intervalo válido para este dia.';
                 return;
             }
 
-            timeSelect.disabled = false;
+            timeStartInput.disabled = false;
+            timeEndInput.disabled = false;
 
-            for (var i = 0; i < options.length; i++) {
-                var option = document.createElement('option');
-                option.value = options[i];
-                option.textContent = options[i];
-                timeSelect.appendChild(option);
+            for (var i = 0; i < startOptions.length; i++) {
+                var startOption = document.createElement('option');
+                startOption.value = startOptions[i];
+                startOption.textContent = startOptions[i];
+                startTimeOptions.appendChild(startOption);
             }
 
-            timeSelect.value = options[0];
+            timeStartInput.value = startOptions[0];
+            updateEndOptions(opening, closing, timeStartInput.value);
         }
 
-        function buildTimeSlots(opening, closing) {
+        function buildStartSlots(opening, closing) {
             var slots = [];
             var openingMinutes = parseTimeToMinutes(opening);
             var closingMinutes = parseTimeToMinutes(closing);
@@ -452,11 +464,63 @@
                 return slots;
             }
 
-            for (var currentMinutes = openingMinutes; currentMinutes <= closingMinutes; currentMinutes += 15) {
+            var lastStartMinute = closingMinutes - 15;
+            if (lastStartMinute < openingMinutes) {
+                return slots;
+            }
+
+            for (var currentMinutes = openingMinutes; currentMinutes <= lastStartMinute; currentMinutes += 15) {
                 slots.push(formatMinutes(currentMinutes));
             }
 
             return slots;
+        }
+
+        function updateEndOptions(opening, closing, selectedStart) {
+            var startMinutes = parseTimeToMinutes(selectedStart);
+            var closingMinutes = parseTimeToMinutes(closing);
+            var openingMinutes = parseTimeToMinutes(opening);
+            var slots = [];
+
+            endTimeOptions.innerHTML = '';
+
+            if (startMinutes === null || closingMinutes === null || openingMinutes === null) {
+                timeEndInput.value = '';
+                submitButton.disabled = true;
+                return;
+            }
+
+            var startForEnd = startMinutes + 15;
+            if (startForEnd < openingMinutes + 15) {
+                startForEnd = openingMinutes + 15;
+            }
+
+            var endLimit = closingMinutes;
+            var dayEndLimit = parseTimeToMinutes('23:45');
+            if (dayEndLimit !== null && dayEndLimit < endLimit) {
+                endLimit = dayEndLimit;
+            }
+
+            for (var currentMinutes = startForEnd; currentMinutes <= endLimit; currentMinutes += 15) {
+                slots.push(formatMinutes(currentMinutes));
+            }
+
+            if (slots.length === 0) {
+                timeEndInput.value = '';
+                submitButton.disabled = true;
+                scheduleHelper.textContent = 'Escolha um horário inicial menor para liberar um horário final.';
+                return;
+            }
+
+            for (var i = 0; i < slots.length; i++) {
+                var endOption = document.createElement('option');
+                endOption.value = slots[i];
+                endOption.textContent = slots[i];
+                endTimeOptions.appendChild(endOption);
+            }
+
+            timeEndInput.value = slots[0];
+            submitButton.disabled = false;
         }
 
         function parseTimeToMinutes(time) {
@@ -476,6 +540,35 @@
             }
 
             return (hours * 60) + minutes;
+        }
+
+        timeStartInput.addEventListener('change', function () {
+            var activeDay = getActiveDayAvailability();
+            if (!activeDay) {
+                return;
+            }
+
+            updateEndOptions(activeDay.opening, activeDay.closing, timeStartInput.value);
+        });
+
+        timeStartInput.addEventListener('input', function () {
+            var activeDay = getActiveDayAvailability();
+            if (!activeDay) {
+                return;
+            }
+
+            updateEndOptions(activeDay.opening, activeDay.closing, timeStartInput.value);
+        });
+
+        function getActiveDayAvailability() {
+            var selectedDate = selectedDateInput.value;
+            if (!selectedDate) {
+                return null;
+            }
+
+            var selectedDay = new Date(selectedDate + 'T00:00:00');
+            var weekDayKey = weekdayKeys[selectedDay.getDay()];
+            return availabilityByWeekday[weekDayKey] || null;
         }
 
         function formatMinutes(totalMinutes) {

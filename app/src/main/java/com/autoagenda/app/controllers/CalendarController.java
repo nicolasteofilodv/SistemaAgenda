@@ -39,9 +39,10 @@ public class CalendarController {
     public String reserve(
         @PathVariable("userId") Long userId,
         @RequestParam("date") String date,
-        @RequestParam("time") String time
+        @RequestParam("time") String time,
+        @RequestParam("timeFim") String timeFim
     ) {
-        this.calendarService.createReservation(userId, date, time);
+        this.calendarService.createReservation(userId, date, time, timeFim);
         return "redirect:/" + userId + "/agenda?scheduled=1";
     }
 }

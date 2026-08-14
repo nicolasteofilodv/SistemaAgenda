@@ -94,10 +94,10 @@ public class CalendarService {
 	}
 
 	@Transactional
-	public void createReservation(Long userId, String date, String time) {
+	public void createReservation(Long userId, String date, String time, String timeFim) {
 		User user = getUserOrThrow(userId);
-		if (date == null || date.isBlank() || time == null || time.isBlank()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data e horário são obrigatórios");
+		if (date == null || date.isBlank() || time == null || time.isBlank() || timeFim == null || timeFim.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data e horários são obrigatórios");
 		}
 
 		LocalDate selectedDate = LocalDate.parse(date);
@@ -121,8 +121,18 @@ public class CalendarService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Horário fora da disponibilidade do dia");
 		}
 
+		OffsetTime selectedEndTime = parseTime(timeFim, null);
+		if (selectedEndTime == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Horário final inválido");
+		}
+
+		if (!isEndTimeAllowed(availableDay, selectedTime, selectedEndTime)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Horário final fora da disponibilidade do dia");
+		}
+
 		Reservation reservation = new Reservation();
 		reservation.setHorario(OffsetDateTime.of(selectedDate, selectedTime.toLocalTime(), ZoneOffset.UTC));
+		reservation.setHorarioFim(OffsetDateTime.of(selectedDate, selectedEndTime.toLocalTime(), ZoneOffset.UTC));
 
 		List<Reservation> reservations = availableDay.getReservedDay();
 		if (reservations == null) {
@@ -156,6 +166,7 @@ public class CalendarService {
 		form.setLabel(availableDays.getWeekDay().getDisplayName(java.time.format.TextStyle.FULL, new Locale("pt", "BR")));
 		form.setOpening(formatTime(availableDays.getOpening()));
 		form.setClosening(formatTime(availableDays.getClosening()));
+		form.setHorarioFim(formatTime(availableDays.getClosening()));
 		form.setTimeOptions(buildTimeOptions(availableDays.getOpening(), availableDays.getClosening()));
 		return form;
 	}
@@ -201,6 +212,31 @@ public class CalendarService {
 		OffsetTime targetTime = selectedTime.withSecond(0).withNano(0);
 
 		while (!currentTime.isAfter(endTime)) {
+			if (currentTime.equals(targetTime)) {
+				return true;
+			}
+			currentTime = currentTime.plusMinutes(15);
+		}
+
+		return false;
+	}
+
+	private boolean isEndTimeAllowed(AvailableDays availableDay, OffsetTime startTime, OffsetTime endTime) {
+		OffsetTime opening = availableDay.getOpening();
+		OffsetTime closing = availableDay.getClosening();
+		if (opening == null || closing == null || startTime == null || endTime == null) {
+			return false;
+		}
+
+		OffsetTime currentTime = startTime.withSecond(0).withNano(0).plusMinutes(15);
+		OffsetTime limitTime = closing.withSecond(0).withNano(0);
+		OffsetTime targetTime = endTime.withSecond(0).withNano(0);
+
+		if (targetTime.isBefore(currentTime)) {
+			return false;
+		}
+
+		while (!currentTime.isAfter(limitTime)) {
 			if (currentTime.equals(targetTime)) {
 				return true;
 			}

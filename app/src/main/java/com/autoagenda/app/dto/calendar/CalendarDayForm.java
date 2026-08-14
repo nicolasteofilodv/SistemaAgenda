@@ -9,6 +9,7 @@ public class CalendarDayForm {
     private String label;
     private String opening;
     private String closening;
+    private String horarioFim;
     private List<String> timeOptions = new ArrayList<>();
 
     public String getWeekDay() {
@@ -41,6 +42,14 @@ public class CalendarDayForm {
 
     public void setClosening(String closening) {
         this.closening = closening;
+    }
+
+    public String getHorarioFim() {
+        return horarioFim;
+    }
+
+    public void setHorarioFim(String horarioFim) {
+        this.horarioFim = horarioFim;
     }
 
     public List<String> getTimeOptions() {
