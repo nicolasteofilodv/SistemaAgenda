@@ -32,9 +32,9 @@ public class AvailableDays {
     @JoinColumn(name = "user_id")
     private User user; 
 
-    @OneToMany(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "day_id")
-    public List<Reservation> reservedDay = new ArrayList<>();
+	@OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@JoinColumn(name = "day_id")
+	public List<Reservation> reservedDay = new ArrayList<>();
 
     public Long getId() {
         return id;
