@@ -1,7 +1,4 @@
 package com.autoagenda.app.models;
-
-import com.autoagenda.app.utils.UserRoles;
-
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -25,16 +22,6 @@ public class RolesUsers {
     @MapsId("userId")
     @JoinColumn(name = "user_id")
     private User user;
-
-    private UserRoles atribuicao;
-
-    public UserRoles getAtribuicao() {
-        return atribuicao;
-    }
-
-    public void setAtribuicao(UserRoles atribuicao) {
-        this.atribuicao = atribuicao;
-    }
 
     public RolesUsersId getId() {
         return id;

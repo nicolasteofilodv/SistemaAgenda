@@ -1,10 +1,7 @@
 package com.autoagenda.app.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.Set;
 import com.autoagenda.app.utils.UserRoles;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,14 +15,14 @@ import jakarta.persistence.Table;
 public class Roles {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private Long id;
    
     @Column(name = "atribuicao")
     private UserRoles role;
    
     @OneToMany(mappedBy="role")
-    private List<RolesUsers> roles = new ArrayList<>();
+    private Set<RolesUsers> roles;
 
     public Long getId() {
         return id;
@@ -43,12 +40,13 @@ public class Roles {
         this.role = role;
     }
 
-    public List<RolesUsers> getRoles() {
+    public Set<RolesUsers> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<RolesUsers> roles) {
+    public void setRoles(Set<RolesUsers> roles) {
         this.roles = roles;
-    } 
+    }
+
     
 }

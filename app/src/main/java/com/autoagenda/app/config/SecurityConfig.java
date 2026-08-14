@@ -18,6 +18,7 @@ public class SecurityConfig {
         ((authorize) -> authorize.requestMatchers("/register")
         .permitAll()
         .requestMatchers("/login").permitAll()
+        .requestMatchers("/*/agenda").permitAll()
         .anyRequest()
         .authenticated()
     );
